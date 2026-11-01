@@ -1,0 +1,25 @@
+{
+  "name": "mindmap-ai",
+  "version": "1.0.0",
+  "description": "MINDMAP AI — Personal Knowledge Universe (MERN Stack with Cosmic Intelligence)",
+  "scripts": {
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "seed": "cd server && node utils/seeder.js",
+    "server": "cd server && node server.js",
+    "client": "cd client && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "mern",
+    "knowledge-graphs",
+    "react-flow",
+    "ai-education",
+    "gemini",
+    "spaced-repetition"
+  ],
+  "author": "B.Tech CSE Major Project",
+  "license": "MIT"
+}
