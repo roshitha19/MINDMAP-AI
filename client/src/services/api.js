@@ -1,7 +1,28 @@
 import axios from 'axios';
 
+// Resolve API base URL dynamically:
+// - In production (e.g. Vercel), uses import.meta.env.VITE_API_URL
+// - In local dev (when unset), defaults to '/api' to use Vite's proxy to http://localhost:5000
+export const getBaseURL = () => {
+  const rawApiUrl = import.meta.env.VITE_API_URL;
+  if (!rawApiUrl) {
+    return '/api';
+  }
+  const clean = rawApiUrl.trim().replace(/\/+$/, '');
+  return clean.endsWith('/api') ? clean : `${clean}/api`;
+};
+
+// Helper to resolve static file/upload URLs (e.g. /uploads/notes.pdf)
+export const getFileUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  const baseUrl = getBaseURL().replace(/\/api\/?$/, '');
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return baseUrl ? `${baseUrl}${cleanPath}` : cleanPath;
+};
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },

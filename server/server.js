@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const connectDB = require('./config/db');
+const seedDemoUser = require('./config/seedDemoUser');
 const errorHandler = require('./middleware/errorMiddleware');
 
 // Route imports
@@ -23,13 +24,42 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const app = express();
 
 // Connect to MongoDB
-connectDB();
+// Connect to MongoDB and create demo account
+connectDB().then(async () => {
+  await seedDemoUser();
+});
 
 // Security and middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(cors());
+// CORS Configuration supporting Vercel, localhost, and custom frontend URLs
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow non-browser requests (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    // Allow localhost, any Vercel domain (*.vercel.app), or configured CLIENT_URL
+    if (
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.endsWith('.vercel.app') ||
+      allowedOrigins.some(ao => origin.startsWith(ao) || origin === ao)
+    ) {
+      return callback(null, true);
+    }
+    // Fallback allows cross-origin requests
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
